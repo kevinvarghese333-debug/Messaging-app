@@ -50,10 +50,10 @@ assigned task, and never lose track of who owes what.
 
 ```bash
 npm run setup     # install deps, create SQLite schema, seed the demo org
-npm run dev       # server on :3001, web on :5173
+npm run dev       # server on :3021, web on :5179
 ```
 
-Open http://localhost:5173 and sign in with a demo account (password `password123`):
+Open http://localhost:5179 and sign in with a demo account (password `password123`):
 
 | Email | Role |
 | --- | --- |
@@ -81,3 +81,7 @@ npm run build     # type-check + production builds
   Escalation grace period is configurable via `ESCALATION_GRACE_MS`.
 - `server/.env` ships with dev defaults (SQLite path, dev JWT secret). Change
   `JWT_SECRET` and switch Prisma to Postgres for production.
+- Ports: the API listens on `PORT` from `server/.env` (default 3021); the web dev
+  server uses 5179 (see `web/vite.config.ts` — change both proxy targets if you
+  change the API port). If a port is taken, Vite picks the next free one and prints
+  the actual URL in the terminal.
