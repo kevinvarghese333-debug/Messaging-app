@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite has no native enums; string fields below use these values:
+//   User.roleLevel:        ADMIN | DEPT_HEAD | MANAGER | MEMBER
+//   Channel.type:          PUBLIC | PRIVATE | DM
+//   Mention.targetType:    USER | DEPARTMENT | ROLE_LEVEL | EVERYONE
+//   Task.status:           OPEN | IN_PROGRESS | DONE
+//   Task.priority:         LOW | MEDIUM | HIGH | URGENT
+//   TaskAssignee.via:      DIRECT | DEPARTMENT | ROLE_LEVEL
+//   Reminder.kind:         DUE_SOON | OVERDUE | ESCALATION
+//   MeetingAttendee.response: PENDING | ACCEPTED | DECLINED
+
+model Department {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  headId    String?
+  head      User?     @relation("DepartmentHead", fields: [headId], references: [id])
+  users     User[]    @relation("DepartmentMembers")
+  channels  Channel[]
+  createdAt DateTime  @default(now())
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  handle       String    @unique
+  email        String    @unique
+  passwordHash String
+  roleLevel    String    @default("MEMBER")
+  active       Boolean   @default(true)
+  departmentId String?
+  department   Department? @relation("DepartmentMembers", fields: [departmentId], references: [id])
+  managerId    String?
+  manager      User?     @relation("ManagerReports", fields: [managerId], references: [id])
+  reports      User[]    @relation("ManagerReports")
+  headOf       Department[] @relation("DepartmentHead")
+  lastSeenAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  channelMemberships ChannelMember[]
+  messages           Message[]
+  notifications      Notification[]
+  taskAssignments    TaskAssignee[]
+  tasksAssigned      Task[]            @relation("TaskAssigner")
+  meetingsOrganized  Meeting[]
+  meetingAttendance  MeetingAttendee[]
+}
+
+model Channel {
+  id           String    @id @default(cuid())
+  name         String
+  type         String    @default("PUBLIC")
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  createdById  String?
+  dmKey        String?   @unique // sorted "userIdA:userIdB", ensures one DM channel per pair
+  createdAt    DateTime  @default(now())
+  members      ChannelMember[]
+  messages     Message[]
+}
+
+model ChannelMember {
+  id         String    @id @default(cuid())
+  channelId  String
+  channel    Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadAt DateTime?
+  joinedAt   DateTime  @default(now())
+
+  @@unique([channelId, userId])
+}
+
+model Message {
+  id             String    @id @default(cuid())
+  channelId      String
+  channel        Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User      @relation(fields: [authorId], references: [id])
+  content        String
+  parentId       String?
+  parent         Message?  @relation("Thread", fields: [parentId], references: [id])
+  replies        Message[] @relation("Thread")
+  attachmentPath String?
+  attachmentName String?
+  attachmentType String?
+  createdAt      DateTime  @default(now())
+  mentions       Mention[]
+  task           Task?
+}
+
+model Mention {
+  id          String  @id @default(cuid())
+  messageId   String
+  message     Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  targetType  String
+  targetId    String?
+  targetLabel String
+}
+
+model Task {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  sourceMessageId String?   @unique
+  sourceMessage   Message?  @relation(fields: [sourceMessageId], references: [id])
+  assignerId      String
+  assigner        User      @relation("TaskAssigner", fields: [assignerId], references: [id])
+  status          String    @default("OPEN")
+  priority        String    @default("MEDIUM")
+  dueDate         DateTime?
+  acknowledgedAt  DateTime?
+  meetingId       String?
+  meeting         Meeting?  @relation(fields: [meetingId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  assignees       TaskAssignee[]
+  reminders       Reminder[]
+}
+
+model TaskAssignee {
+  id       String  @id @default(cuid())
+  taskId   String
+  task     Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  via      String  @default("DIRECT")
+  viaLabel String?
+
+  @@unique([taskId, userId])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Reminder {
+  id     String   @id @default(cuid())
+  taskId String
+  task   Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  kind   String
+  sentAt DateTime @default(now())
+
+  @@unique([taskId, kind])
+}
+
+model Meeting {
+  id             String    @id @default(cuid())
+  title          String
+  description    String?
+  startsAt       DateTime
+  endsAt         DateTime
+  location       String?
+  organizerId    String
+  organizer      User      @relation(fields: [organizerId], references: [id])
+  reminderSentAt DateTime?
+  createdAt      DateTime  @default(now())
+  attendees      MeetingAttendee[]
+  actionItems    Task[]
+}
+
+model MeetingAttendee {
+  id        String  @id @default(cuid())
+  meetingId String
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  response  String  @default("PENDING")
+
+  @@unique([meetingId, userId])
+}
