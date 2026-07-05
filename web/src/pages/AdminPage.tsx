@@ -110,7 +110,10 @@ export default function AdminPage() {
                 <tr key={u.id} className="border-b border-slate-50">
                   <td className="px-4 py-2">
                     <p className="font-medium text-slate-800">{u.name}</p>
-                    <p className="text-xs text-slate-400">@{u.handle} · {u.email}</p>
+                    <p className="text-xs text-slate-400">
+                      @{u.handle} · {u.email.endsWith(".local") ? "no email" : u.email}
+                      {u.phone ? ` · ${u.phone}` : ""}
+                    </p>
                   </td>
                   <td className="px-4 py-2">
                     <select

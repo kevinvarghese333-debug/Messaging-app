@@ -9,6 +9,12 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 const passwordHash = bcrypt.hashSync("password123", 10);
 
+let phoneCounter = 0;
+function nextPhone() {
+  phoneCounter += 1;
+  return `+9190000000${String(phoneCounter).padStart(2, "0")}`;
+}
+
 async function upsertUser(data: {
   name: string;
   handle: string;
@@ -17,14 +23,16 @@ async function upsertUser(data: {
   departmentId?: string;
   managerId?: string;
 }) {
+  const phone = nextPhone();
   return prisma.user.upsert({
     where: { email: data.email },
     update: {
       roleLevel: data.roleLevel,
       departmentId: data.departmentId ?? null,
       managerId: data.managerId ?? null,
+      phone,
     },
-    create: { ...data, passwordHash },
+    create: { ...data, passwordHash, phone },
   });
 }
 
@@ -193,8 +201,8 @@ async function main() {
     });
   }
 
-  console.log("Seeded demo org. Log in as any of:");
-  for (const u of everyone) console.log(`  ${u.email}  (password123)  — ${u.roleLevel}`);
+  console.log("Seeded demo org. Log in with password `password123` or via OTP as any of:");
+  for (const u of everyone) console.log(`  ${u.email}  ${u.phone}  — ${u.roleLevel}`);
 }
 
 main()

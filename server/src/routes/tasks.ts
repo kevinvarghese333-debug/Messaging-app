@@ -55,8 +55,11 @@ tasksRouter.get("/", async (req, res) => {
   const tasks = await prisma.task.findMany({
     where,
     include: taskInclude,
-    orderBy: [{ status: "asc" }, { dueDate: "asc" }, { createdAt: "desc" }],
+    orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
   });
+  // Active work first, completed last.
+  const rank: Record<string, number> = { NOT_STARTED: 0, DECISION_MAKING: 1, IN_PROGRESS: 2, COMPLETED: 3 };
+  tasks.sort((a, b) => (rank[a.status] ?? 0) - (rank[b.status] ?? 0));
   res.json({ tasks });
 });
 
@@ -85,12 +88,19 @@ tasksRouter.patch("/:id", async (req, res) => {
   const { title, description, status, priority, dueDate } = req.body ?? {};
   const dueDateChanged = dueDate !== undefined;
 
+  const VALID_STATUSES = ["NOT_STARTED", "DECISION_MAKING", "IN_PROGRESS", "COMPLETED"];
+  if (status !== undefined && !VALID_STATUSES.includes(status)) {
+    return res.status(400).json({ error: `status must be one of ${VALID_STATUSES.join(", ")}` });
+  }
+
   const updated = await prisma.task.update({
     where: { id: task.id },
     data: {
       ...(title !== undefined ? { title: String(title) } : {}),
       ...(description !== undefined ? { description: description ? String(description) : null } : {}),
-      ...(status !== undefined ? { status } : {}),
+      ...(status !== undefined
+        ? { status, completedAt: status === "COMPLETED" ? task.completedAt ?? new Date() : null }
+        : {}),
       ...(priority !== undefined ? { priority } : {}),
       ...(dueDateChanged ? { dueDate: dueDate ? new Date(dueDate) : null } : {}),
     },

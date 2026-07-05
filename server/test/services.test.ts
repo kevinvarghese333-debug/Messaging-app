@@ -169,7 +169,7 @@ describe("reminders and escalation", () => {
 
   it("does not remind about completed tasks", async () => {
     const task = await makeTask({ dueInMs: -60 * 60 * 1000 });
-    await prisma.task.update({ where: { id: task.id }, data: { status: "DONE" } });
+    await prisma.task.update({ where: { id: task.id }, data: { status: "COMPLETED" } });
     await runReminderPass(new Date(), 0);
     expect(await prisma.notification.count()).toBe(0);
   });

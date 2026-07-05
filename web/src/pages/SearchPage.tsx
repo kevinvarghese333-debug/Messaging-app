@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { Task } from "../lib/types";
 import Avatar from "../components/Avatar";
+import { statusLabel } from "../lib/status";
 
 interface SearchResults {
   messages: {
@@ -91,7 +92,7 @@ export default function SearchPage() {
               >
                 <p className="text-sm font-medium text-slate-800">{t.title}</p>
                 <p className="mt-0.5 text-xs text-slate-400">
-                  {t.status.replace("_", " ").toLowerCase()} · assigned to{" "}
+                  {statusLabel(t.status)} · assigned to{" "}
                   {t.assignees.map((a) => a.user.name).join(", ")}
                 </p>
               </Link>

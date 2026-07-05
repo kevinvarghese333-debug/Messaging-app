@@ -3,6 +3,7 @@ export interface User {
   name: string;
   handle: string;
   email: string;
+  phone: string | null;
   roleLevel: "ADMIN" | "DEPT_HEAD" | "MANAGER" | "MEMBER";
   active: boolean;
   departmentId: string | null;
@@ -67,10 +68,11 @@ export interface Task {
   id: string;
   title: string;
   description: string | null;
-  status: "OPEN" | "IN_PROGRESS" | "DONE";
+  status: "NOT_STARTED" | "DECISION_MAKING" | "IN_PROGRESS" | "COMPLETED";
   priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   dueDate: string | null;
   acknowledgedAt: string | null;
+  completedAt: string | null;
   createdAt: string;
   assignerId: string;
   assigner: { id: string; name: string; handle: string };
@@ -113,6 +115,35 @@ export interface MentionTarget {
   kind: "user" | "department" | "group";
   token: string;
   label: string;
+}
+
+export interface ProductivityStats {
+  assigned: number;
+  completed: number;
+  completedOnTime: number;
+  completedWithDueDate: number;
+  onTimeRate: number | null;
+  avgCompletionHours: number | null;
+  openWorkload: number;
+  overdueOpen: number;
+  acknowledgedRate: number | null;
+}
+
+export interface ProductivityReport {
+  days: number;
+  users: {
+    user: {
+      id: string;
+      name: string;
+      handle: string;
+      roleLevel: string;
+      departmentId: string | null;
+      department: { id: string; name: string } | null;
+    };
+    stats: ProductivityStats;
+  }[];
+  departments: { department: { id: string; name: string }; stats: ProductivityStats }[];
+  totals: ProductivityStats;
 }
 
 export type AssignmentTarget =

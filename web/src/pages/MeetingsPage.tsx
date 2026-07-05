@@ -5,6 +5,7 @@ import { useAuth } from "../state/AuthContext";
 import { useShell } from "./Shell";
 import Avatar from "../components/Avatar";
 import TaskModal from "../components/TaskModal";
+import { statusLabel } from "../lib/status";
 
 function CreateMeetingModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
   const { users, departments } = useShell();
@@ -277,14 +278,14 @@ export default function MeetingsPage() {
                   <div key={task.id} className="mt-1.5 flex items-center gap-2 text-sm">
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        task.status === "DONE"
+                        task.status === "COMPLETED"
                           ? "bg-emerald-100 text-emerald-700"
                           : "bg-amber-100 text-amber-700"
                       }`}
                     >
-                      {task.status.replace("_", " ").toLowerCase()}
+                      {statusLabel(task.status)}
                     </span>
-                    <span className={task.status === "DONE" ? "text-slate-400 line-through" : "text-slate-700"}>
+                    <span className={task.status === "COMPLETED" ? "text-slate-400 line-through" : "text-slate-700"}>
                       {task.title}
                     </span>
                     <span className="flex items-center gap-1">

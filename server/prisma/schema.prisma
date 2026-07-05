@@ -11,7 +11,7 @@ datasource db {
 //   User.roleLevel:        ADMIN | DEPT_HEAD | MANAGER | MEMBER
 //   Channel.type:          PUBLIC | PRIVATE | DM
 //   Mention.targetType:    USER | DEPARTMENT | ROLE_LEVEL | EVERYONE
-//   Task.status:           OPEN | IN_PROGRESS | DONE
+//   Task.status:           NOT_STARTED | DECISION_MAKING | IN_PROGRESS | COMPLETED
 //   Task.priority:         LOW | MEDIUM | HIGH | URGENT
 //   TaskAssignee.via:      DIRECT | DEPARTMENT | ROLE_LEVEL
 //   Reminder.kind:         DUE_SOON | OVERDUE | ESCALATION
@@ -33,9 +33,11 @@ model User {
   name         String
   handle       String    @unique
   email        String    @unique
-  passwordHash String
+  phone        String?   @unique
+  passwordHash String?
   roleLevel    String    @default("MEMBER")
   active       Boolean   @default(true)
+  invitedById  String?
   departmentId String?
   department   Department? @relation("DepartmentMembers", fields: [departmentId], references: [id])
   managerId    String?
@@ -114,10 +116,11 @@ model Task {
   sourceMessage   Message?  @relation(fields: [sourceMessageId], references: [id])
   assignerId      String
   assigner        User      @relation("TaskAssigner", fields: [assignerId], references: [id])
-  status          String    @default("OPEN")
+  status          String    @default("NOT_STARTED")
   priority        String    @default("MEDIUM")
   dueDate         DateTime?
   acknowledgedAt  DateTime?
+  completedAt     DateTime?
   meetingId       String?
   meeting         Meeting?  @relation(fields: [meetingId], references: [id])
   createdAt       DateTime  @default(now())
@@ -158,6 +161,18 @@ model Reminder {
   sentAt DateTime @default(now())
 
   @@unique([taskId, kind])
+}
+
+model OtpCode {
+  id         String    @id @default(cuid())
+  identifier String // normalized phone or lowercased email
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([identifier])
 }
 
 model Meeting {

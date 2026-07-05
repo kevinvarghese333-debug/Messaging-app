@@ -10,6 +10,7 @@ import { tasksRouter } from "./routes/tasks";
 import { meetingsRouter } from "./routes/meetings";
 import { notificationsRouter } from "./routes/notifications";
 import { searchRouter } from "./routes/search";
+import { productivityRouter } from "./routes/productivity";
 
 export function createApp() {
   const app = express();
@@ -27,6 +28,7 @@ export function createApp() {
   app.use("/api/meetings", meetingsRouter);
   app.use("/api/notifications", notificationsRouter);
   app.use("/api/search", searchRouter);
+  app.use("/api/productivity", productivityRouter);
 
   app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 

@@ -7,6 +7,7 @@ import { useAuth } from "../state/AuthContext";
 import { useShell } from "./Shell";
 import Avatar from "../components/Avatar";
 import TaskModal from "../components/TaskModal";
+import { TASK_STATUSES } from "../lib/status";
 
 const PRIORITY_STYLE: Record<string, string> = {
   LOW: "bg-slate-100 text-slate-600",
@@ -27,7 +28,7 @@ function TaskCard({
   const { user } = useAuth();
   const isAssignee = task.assignees.some((a) => a.userId === user?.id);
   const canEdit = isAssignee || task.assignerId === user?.id || user?.roleLevel === "ADMIN";
-  const overdue = task.dueDate && task.status !== "DONE" && new Date(task.dueDate) < new Date();
+  const overdue = task.dueDate && task.status !== "COMPLETED" && new Date(task.dueDate) < new Date();
 
   async function setStatus(status: string) {
     await api(`/api/tasks/${task.id}`, { method: "PATCH", body: { status } });
@@ -43,11 +44,11 @@ function TaskCard({
       id={`task-${task.id}`}
       className={`rounded-xl bg-white p-4 shadow-sm ring-1 ${
         highlight ? "ring-2 ring-indigo-500" : "ring-slate-200"
-      } ${task.status === "DONE" ? "opacity-60" : ""}`}
+      } ${task.status === "COMPLETED" ? "opacity-60" : ""}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className={`font-semibold text-slate-800 ${task.status === "DONE" ? "line-through" : ""}`}>
+          <p className={`font-semibold text-slate-800 ${task.status === "COMPLETED" ? "line-through" : ""}`}>
             {task.title}
           </p>
           {task.description && <p className="mt-0.5 text-sm text-slate-500">{task.description}</p>}
@@ -76,7 +77,7 @@ function TaskCard({
           </Link>
         )}
         {task.meeting && <span>· 📅 {task.meeting.title}</span>}
-        {isAssignee && !task.acknowledgedAt && task.status !== "DONE" && (
+        {isAssignee && !task.acknowledgedAt && task.status !== "COMPLETED" && (
           <button
             onClick={acknowledge}
             className="rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700 hover:bg-amber-200"
@@ -106,9 +107,9 @@ function TaskCard({
             value={task.status}
             onChange={(e) => setStatus(e.target.value)}
           >
-            <option value="OPEN">Open</option>
-            <option value="IN_PROGRESS">In progress</option>
-            <option value="DONE">Done</option>
+            {TASK_STATUSES.map((s) => (
+              <option key={s.value} value={s.value}>{s.label}</option>
+            ))}
           </select>
         )}
       </div>
@@ -182,9 +183,9 @@ export default function TasksPage() {
         </select>
         <select className={selectClass} value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">Any status</option>
-          <option value="OPEN">Open</option>
-          <option value="IN_PROGRESS">In progress</option>
-          <option value="DONE">Done</option>
+          {TASK_STATUSES.map((s) => (
+            <option key={s.value} value={s.value}>{s.label}</option>
+          ))}
         </select>
         <select className={selectClass} value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
           <option value="">Any department</option>
@@ -224,8 +225,8 @@ export default function TasksPage() {
                 <p className="mb-2 mt-4 flex items-center gap-2 text-sm font-bold text-slate-700">
                   <Avatar name={group.name} size={6} /> {group.name}
                   <span className="font-normal text-slate-400">
-                    {group.tasks.filter((t) => t.status !== "DONE").length} open ·{" "}
-                    {group.tasks.filter((t) => t.status === "DONE").length} done
+                    {group.tasks.filter((t) => t.status !== "COMPLETED").length} open ·{" "}
+                    {group.tasks.filter((t) => t.status === "COMPLETED").length} completed
                   </span>
                 </p>
                 <div className="space-y-3">

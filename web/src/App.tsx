@@ -7,6 +7,8 @@ import TasksPage from "./pages/TasksPage";
 import MeetingsPage from "./pages/MeetingsPage";
 import AdminPage from "./pages/AdminPage";
 import SearchPage from "./pages/SearchPage";
+import TeamPage from "./pages/TeamPage";
+import ProductivityPage from "./pages/ProductivityPage";
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -28,6 +30,8 @@ export default function App() {
         <Route path="channels/:channelId" element={<ChannelPage />} />
         <Route path="tasks" element={<TasksPage />} />
         <Route path="meetings" element={<MeetingsPage />} />
+        <Route path="productivity" element={<ProductivityPage />} />
+        <Route path="team" element={<TeamPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="admin" element={<AdminPage />} />
         <Route path="*" element={<Navigate to="/tasks" replace />} />

@@ -103,6 +103,10 @@ export default function Shell() {
         <nav className="space-y-0.5 px-2">
           <NavLink to="/tasks" className={navClass}>✓ Tasks</NavLink>
           <NavLink to="/meetings" className={navClass}>📅 Meetings</NavLink>
+          <NavLink to="/productivity" className={navClass}>📊 Productivity</NavLink>
+          {["MANAGER", "DEPT_HEAD", "ADMIN"].includes(user?.roleLevel ?? "") && (
+            <NavLink to="/team" className={navClass}>👥 My team</NavLink>
+          )}
           <NavLink to="/search" className={navClass}>🔍 Search</NavLink>
           {user?.roleLevel === "ADMIN" && <NavLink to="/admin" className={navClass}>⚙️ Admin</NavLink>}
         </nav>

@@ -20,7 +20,7 @@ async function markSent(taskId: string, kind: string) {
  */
 export async function runReminderPass(now = new Date(), escalationGraceMs = ESCALATION_GRACE_MS) {
   const openWithDue = await prisma.task.findMany({
-    where: { status: { not: "DONE" }, dueDate: { not: null } },
+    where: { status: { not: "COMPLETED" }, dueDate: { not: null } },
     include: {
       assignees: { include: { user: { select: { id: true, name: true, managerId: true } } } },
       assigner: { select: { id: true, name: true } },

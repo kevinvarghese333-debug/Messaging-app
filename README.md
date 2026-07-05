@@ -21,9 +21,24 @@ assigned task, and never lose track of who owes what.
 **Tasks**
 - Assign any message as a task, or create tasks directly (also as meeting action items)
 - Assign to a person, a whole department, or a role group — expanded to concrete people
-- Status (open / in progress / done), priority, due dates, acknowledgment
+- Four stages: not yet started → decision making → in progress → completed;
+  plus priority, due dates, and acknowledgment
 - Dashboard: my tasks, tasks I assigned, and an org-wide "who's assigned what" view
   with filters by status/department/assignee and group-by-assignee
+
+**Productivity analyzer**
+- 📊 Productivity page: org totals plus per-person and per-department breakdowns —
+  tasks completed, on-time rate, average completion time, current open workload,
+  overdue count, acknowledgment rate; filter by 7/30/90 days and department
+
+**Team management & OTP login**
+- Managers add teammates from 👥 My team with just a name + mobile number; the new
+  person joins their department reporting to them — no self-signup, nothing to pay
+- Login with a one-time code: enter your phone number or email, receive a 6-digit
+  OTP, sign in. Password login remains as a fallback tab
+- OTP delivery is pluggable: with no provider configured, codes print to the server
+  terminal (perfect for local testing); add a Resend key for email codes or Twilio
+  credentials for real SMS — see `server/.env`
 
 **Reminders & escalation**
 - Automatic notification on assignment
@@ -77,6 +92,8 @@ npm run build     # type-check + production builds
 - Notifications are delivered in-app (DB + realtime push). The delivery pipeline is a
   single function (`server/src/services/notifier.ts`) — plug an email or push provider
   in there when needed.
+- Upgrading a database created before the 4-stage task workflow? Run
+  `npm run migrate -w server` once to remap old status values.
 - The reminder scheduler runs in-process every 60s (`server/src/services/reminderScheduler.ts`).
   Escalation grace period is configurable via `ESCALATION_GRACE_MS`.
 - `server/.env` ships with dev defaults (SQLite path, dev JWT secret). Change

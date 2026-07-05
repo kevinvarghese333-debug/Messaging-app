@@ -28,16 +28,23 @@ describe("auth and org API", () => {
   it("makes the first registered user an admin", async () => {
     const res = await request(app)
       .post("/api/auth/register")
-      .send({ name: "Ada Admin", email: "ada@test.local", password: "password123" });
+      .send({ name: "Ada Admin", email: "ada@test.local", phone: "+15550000001", password: "password123" });
     expect(res.status).toBe(200);
     expect(res.body.user.roleLevel).toBe("ADMIN");
     adminToken = res.body.token;
   });
 
+  it("rejects registration without a phone number", async () => {
+    const res = await request(app)
+      .post("/api/auth/register")
+      .send({ name: "No Phone", email: "nophone@test.local", password: "password123" });
+    expect(res.status).toBe(400);
+  });
+
   it("registers subsequent users as members with unique handles", async () => {
     const res = await request(app)
       .post("/api/auth/register")
-      .send({ name: "Ada Admin", email: "ada2@test.local", password: "password123" });
+      .send({ name: "Ada Admin", email: "ada2@test.local", phone: "+15550000002", password: "password123" });
     expect(res.body.user.roleLevel).toBe("MEMBER");
     expect(res.body.user.handle).not.toBe("ada.admin"); // deduped
     memberToken = res.body.token;
@@ -128,11 +135,25 @@ describe("messaging and tasks API", () => {
       .send({});
     expect(ack.body.task.acknowledgedAt).toBeTruthy();
 
+    const decision = await request(app)
+      .patch(`/api/tasks/${taskId}`)
+      .set("Authorization", `Bearer ${memberToken}`)
+      .send({ status: "DECISION_MAKING" });
+    expect(decision.body.task.status).toBe("DECISION_MAKING");
+    expect(decision.body.task.completedAt).toBeNull();
+
     const done = await request(app)
       .patch(`/api/tasks/${taskId}`)
       .set("Authorization", `Bearer ${memberToken}`)
+      .send({ status: "COMPLETED" });
+    expect(done.body.task.status).toBe("COMPLETED");
+    expect(done.body.task.completedAt).toBeTruthy();
+
+    const invalid = await request(app)
+      .patch(`/api/tasks/${taskId}`)
+      .set("Authorization", `Bearer ${memberToken}`)
       .send({ status: "DONE" });
-    expect(done.body.task.status).toBe("DONE");
+    expect(invalid.status).toBe(400);
   });
 
   it("blocks strangers from private channels", async () => {

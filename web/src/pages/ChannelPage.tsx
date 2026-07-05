@@ -8,6 +8,7 @@ import { useShell } from "./Shell";
 import Avatar from "../components/Avatar";
 import Composer from "../components/Composer";
 import TaskModal from "../components/TaskModal";
+import { statusLabel } from "../lib/status";
 
 interface ChannelDetail {
   id: string;
@@ -80,7 +81,7 @@ function MessageRow({
             to={`/tasks?taskId=${message.task.id}`}
             className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700 hover:bg-emerald-200"
           >
-            ✓ Task: {message.task.title.slice(0, 40)} · {message.task.status.replace("_", " ").toLowerCase()}
+            ✓ Task: {message.task.title.slice(0, 40)} · {statusLabel(message.task.status)}
           </Link>
         )}
         {!isReply && message._count.replies > 0 && onOpenThread && (

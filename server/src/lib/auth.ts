@@ -67,6 +67,7 @@ export const publicUserSelect = {
   name: true,
   handle: true,
   email: true,
+  phone: true,
   roleLevel: true,
   active: true,
   departmentId: true,
