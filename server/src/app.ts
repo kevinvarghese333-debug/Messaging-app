@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import fs from "fs";
 import path from "path";
 import { authRouter } from "./routes/auth";
 import { usersRouter } from "./routes/users";
@@ -30,7 +31,19 @@ export function createApp() {
   app.use("/api/search", searchRouter);
   app.use("/api/productivity", productivityRouter);
 
-  app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
+  const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, "..", "uploads");
+  app.use("/uploads", express.static(uploadDir));
+
+  // Production: serve the built web app from this same server, so one URL
+  // carries the UI, the API, uploads, and the socket.io realtime connection.
+  const webDist = path.join(__dirname, "..", "..", "web", "dist");
+  if (fs.existsSync(webDist)) {
+    app.use(express.static(webDist));
+    // SPA fallback: any non-API GET route serves index.html so deep links work.
+    app.get(/^\/(?!api\/|uploads\/|socket\.io\/).*/, (_req, res) => {
+      res.sendFile(path.join(webDist, "index.html"));
+    });
+  }
 
   app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err);

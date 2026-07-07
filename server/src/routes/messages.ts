@@ -11,7 +11,7 @@ import { emitToChannel } from "../realtime/io";
 
 export const messagesRouter = Router();
 
-const uploadDir = path.join(__dirname, "..", "..", "uploads");
+const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, "..", "..", "uploads");
 fs.mkdirSync(uploadDir, { recursive: true });
 
 const upload = multer({

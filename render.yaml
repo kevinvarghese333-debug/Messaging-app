@@ -1,0 +1,16 @@
+# Render.com blueprint — deploy with "New > Blueprint" and this repo.
+services:
+  - type: web
+    name: teamcollab
+    runtime: docker
+    plan: starter # persistent disks require a paid instance
+    disk:
+      name: teamcollab-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      # Uncomment to enable email OTP codes via Resend:
+      # - key: RESEND_API_KEY
+      #   sync: false

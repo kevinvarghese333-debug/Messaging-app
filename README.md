@@ -87,6 +87,12 @@ npm test          # server test suite
 npm run build     # type-check + production builds
 ```
 
+## Deploying for your team
+
+To use TeamCollab as a standalone tool your whole team opens at one URL, see
+**[DEPLOY.md](DEPLOY.md)** — Railway/Render/VPS instructions (~$5/mo total, no
+per-user fees), plus the first-boot checklist and OTP email/SMS setup.
+
 ## Notes
 
 - Notifications are delivered in-app (DB + realtime push). The delivery pipeline is a
