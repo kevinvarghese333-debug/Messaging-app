@@ -1,0 +1,33 @@
+<%@ Master Language="C#" CodeFile="Site.master.cs" Inherits="SiteMaster" %>
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <title>TeamCollab</title>
+    <link rel="stylesheet" href="Styles/site.css" />
+</head>
+<body>
+    <form id="form1" runat="server">
+        <asp:ScriptManager ID="ScriptManager1" runat="server" />
+        <div class="layout">
+            <div class="sidebar">
+                <h1>TeamCollab</h1>
+                <a href="Chat.aspx">💬 Chat</a>
+                <a href="Tasks.aspx">✓ Tasks</a>
+                <a href="Meetings.aspx">📅 Meetings</a>
+                <a href="Productivity.aspx">📊 Productivity</a>
+                <asp:HyperLink ID="lnkTeam" runat="server" NavigateUrl="Team.aspx" Visible="false">👥 My team</asp:HyperLink>
+                <asp:HyperLink ID="lnkAdmin" runat="server" NavigateUrl="Admin.aspx" Visible="false">⚙️ Admin</asp:HyperLink>
+                <a href="Notifications.aspx">🔔 Notifications
+                    <asp:Label ID="lblUnread" runat="server" CssClass="badge" Visible="false" /></a>
+                <div class="me">
+                    <asp:Label ID="lblMe" runat="server" /><br />
+                    <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" Text="Sign out" />
+                </div>
+            </div>
+            <div class="content">
+                <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+            </div>
+        </div>
+    </form>
+</body>
+</html>
